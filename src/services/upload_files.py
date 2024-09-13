@@ -1,16 +1,18 @@
 from pathlib import Path
+from typing import List
+from fastapi import UploadFile
 from werkzeug.utils import secure_filename
 from exceptions.log_handler import system_logger
 from exceptions.errors import FileUploadException
 from schema import Result
 
 
-def upload_file(files, temp_dir):
+async def upload_file(files: List[UploadFile], temp_dir):
     try:
         for file in files:
             filename = secure_filename(file.filename)
             file_path = Path(temp_dir, filename)
-            file_object = file.read()
+            file_object = await file.read()
             with open(file_path, "wb") as buffer:
                 buffer.write(file_object)
         return Result(
