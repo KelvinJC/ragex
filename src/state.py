@@ -1,5 +1,5 @@
 from typing import Optional
-from services.generate_response import VectorStoreIndex
+from llama_index.core import VectorStoreIndex
 
 
 class Embeddings():
