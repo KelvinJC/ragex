@@ -8,12 +8,12 @@ from exceptions.errors import FileUploadException
 from schema import Result
 from utils import check_file
 
-def embed_file(files, app):
+async def embed_file(files, app):
     file_check = check_file(files=files)
     if file_check['status_code'] == 200:
         try:
             with tempfile.TemporaryDirectory() as temp_dir:
-                file_upload = upload_file(files=files, temp_dir=temp_dir)
+                file_upload = await upload_file(files=files, temp_dir=temp_dir)
                 if file_upload.is_successful:
                     documents = SimpleDirectoryReader(temp_dir).load_data()
                     app.embeddings = VectorStoreIndex.from_documents(documents=documents) # store the embeddings in session... not suitable for production
