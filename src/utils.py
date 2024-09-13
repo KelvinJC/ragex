@@ -20,8 +20,7 @@ def check_file(files):
             return {
                 "detail": "No selected file",
                 "status_code": 400
-            }
-        
+            }        
         if not is_allowed_file(file.filename):
             print(file.filename)
             return {
