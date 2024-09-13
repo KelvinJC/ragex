@@ -15,7 +15,7 @@ async def health():
 @app.post('/upload')
 async def process(files: List[UploadFile] = None, urls: List[str] = None):
     try:
-        res = embed_file(files, app)
+        res = await embed_file(files, app)
         if res.error_message: 
             # Use 400 STATUS CODE FOR FILE CHECK ERROR.. 
             # Perhaps a pointer to wrap all embed related func in the service
