@@ -9,7 +9,7 @@ def is_allowed_file(filename: str):
     except Exception as e:
         raise e
 
-def check_file(files):
+def check_files(files):
     if not files:
         return {
             "detail": "No file found", # why not a custom FileNotFoundError
