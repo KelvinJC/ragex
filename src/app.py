@@ -1,7 +1,7 @@
 from typing import List
 
-from fastapi import FastAPI, Request, UploadFile, Depends
-from fastapi.responses import PlainTextResponse, StreamingResponse
+from fastapi import FastAPI, Request, UploadFile, Depends, Response
+from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 
 from state import Embeddings
 from services.embed import embed_file
@@ -27,10 +27,11 @@ async def process(
         if res.error_message: 
             # Use 400 STATUS CODE FOR FILE CHECK ERROR.. 
             # Perhaps a pointer to wrap all embed related func in the service
-            return {
-                "detail": res.detail,
-                "status_code": 400,
-            }
+            return JSONResponse(
+            content=res.detail,
+            status_code=400,
+        )
+
         if res.is_successful:    
             return {
                 "detail": "Embeddings generated successfully.",
