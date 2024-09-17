@@ -1,7 +1,7 @@
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Settings #, ServiceContext
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
-from services.clients import LLMClient
+from services.select_llm_client import LLMClient
 from state import Embeddings
 from exceptions.log_handler import system_logger
 
