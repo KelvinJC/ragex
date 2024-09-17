@@ -1,11 +1,12 @@
 from typing import List
 
-from fastapi import FastAPI, Request, UploadFile, Depends, Response
+from fastapi import FastAPI, HTTPException, Request, UploadFile, Depends, Response
 from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 
 from state import Embeddings
 from services.embed import embed_file
 from services.generate_response import generate
+from exceptions.log_handler import system_logger
 
 app = FastAPI()
 
@@ -27,10 +28,7 @@ async def process(
         if res.error_message: 
             # Use 400 STATUS CODE FOR FILE CHECK ERROR.. 
             # Perhaps a pointer to wrap all embed related func in the service
-            return JSONResponse(
-            content=res.detail,
-            status_code=400,
-        )
+            raise HTTPException(status_code=400, detail=res.detail)
 
         if res.is_successful:    
             return {
@@ -38,15 +36,14 @@ async def process(
                 "status_code": 200,
             }
         else:
-            return {
-                "detail": res.detail,
-                "status_code": 500,
-            }  
+            raise HTTPException(status_code=500, detail=res.detail)
+        
+    except HTTPException as e:
+        system_logger.error(f"Error: {str(e)}")
+        raise e
     except Exception as e:
-        return {
-            "detail": "Could not generate embeddings.",
-            "status_code": 500,
-        }
+        system_logger.error(f"Error generating embeddings: {e}")
+        raise HTTPException(status_code=500, detail="Could not generate embeddings.")
 
 
 @app.post('/generate')
