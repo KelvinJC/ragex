@@ -74,42 +74,24 @@ def post_request_to_api(url: str, question: str, model: str, temperature: float)
     )
     return response
 
-def write_file_content(file, temp_dir) -> Tuple:
-    file_path = Path(temp_dir, file.name)
-    file_object = file.read()
-    try:    
-        with open(file_path, "wb") as buffer:
-            buffer.write(file_object) 
-            return 1  
-    except Exception as e:
-        return 0
-        
-def read_file_content(temp_dir):
-    paths = Path(temp_dir).glob("**/*")
-    return paths
-
-def configure_file_payload(file: Path) -> Tuple:
-    return ('files', (file.name, file.read_bytes(), 'application/pdf'))
+def configure_file_payload(file) -> Tuple:
+    return ("files", (file.name, file.read(), "application/pdf"))
 
 def upload_files_to_api(url: str, files: List):
     """Upload files to backend API"""
-    with tempfile.TemporaryDirectory() as tempdir:
-        all_files = [write_file_content(file, tempdir) for file in files]
-        print("all files", all_files)
-        all_file_content = [configure_file_payload(file) for file in read_file_content(tempdir)]
-        response = requests.post(url, files=all_file_content) # stream=True,
-        return response
+    all_file_content = [configure_file_payload(file) for file in files]
+    response = requests.post(url, files=all_file_content) # stream=True,
+    return response
 
 def handle_file_upload(file_input, backend_url): # default selection is Stream
     if file_input:
         # add user input to session state
-        st.session_state.responses.append({'user': file_input, 'bot': None})
+        st.session_state.responses.append({"user": file_input, "bot": None})
 
         # prepare empty container to update the bot's response in real time
         response_container = st.empty()
 
         response = upload_files_to_api(url=backend_url, files=file_input)
-        print("fast api", response)
         res_detail = response.json()
         print("resp det", res_detail)
         if response.status_code == 200:
@@ -129,7 +111,13 @@ def handle_file_upload(file_input, backend_url): # default selection is Stream
 
         else:
             response_container.markdown(
-                f"""<p style='color:red;'>Error: {res_detail}</p>""", 
+                f"""
+                <div style="padding:10px; border-radius: 5px;">
+                    <p style="font-family: Arial, sans-serif; color:red">
+                        Error: {res_detail["detail"]}
+                    </p>
+                </div>
+                """,
                 unsafe_allow_html=True,
             )
         # clear input box for next question
@@ -150,6 +138,7 @@ def handle_message(user_input, backend_url, selected_model, temperature): # defa
         # prepare empty container to update the bot's response in real time
         response_container = st.empty()
 
+        res = response.json()
         if response.status_code == 200:
             bot_response = ""
             # if selected_response_type == chatbot.output_type[0]:
@@ -187,7 +176,13 @@ def handle_message(user_input, backend_url, selected_model, temperature): # defa
 
         else:
             response_container.markdown(
-                "<p style='color:red;'>Error: Unable to get a response from the server.</p>", 
+                f"""
+                <div style="padding:10px; border-radius: 5px;">
+                    <p style="font-family: Arial, sans-serif; color: red">
+                        Error: {res["detail"]}
+                    </p>
+                </div>
+                """,
                 unsafe_allow_html=True,
             )
         # clear input box for next question
@@ -198,24 +193,22 @@ def get_configs():
         with st.form("🗀 File Input", clear_on_submit=True):
             uploaded_files = st.file_uploader(
                 "Upload local files:",
-                type=["txt", "pdf", "docx", "csv", "jpg", "png", "jpeg"],
+                type=["txt", "pdf", "docx", "csv", "jpg", "png", "jpeg", "py"],
                 accept_multiple_files=True,
             )
             submitted = st.form_submit_button("Submit")
-            # for file in uploaded_files:
-            #     f
         if uploaded_files and submitted:
             st.session_state["uploaded_files"] = uploaded_files
 
-        expander = st.expander("Select your response type", expanded=True)
-        with expander:
-            selected_response_type = st.radio("Output types", ["A", "B"], index=None)
+        # expander = st.expander("Select your response type", expanded=True)
+        # with expander:
         # select model and training parameters
-        expander = st.expander("⚒ Temperature Configuration")
+        expander = st.expander("⚒ Model Configuration", expanded=True)
         with expander:
+            st.subheader("Adjust Model Parameters")
+            selected_response_type = st.radio("Output types", ["Stream", "Batch"], index=None)
             temperature = st.slider("Temperature", min_value=0.01, max_value=5.0, value=0.0, step=0.01, format="%.1f")
         selected_model = st.selectbox("Select your preferred model: ", ["llama-3.1-70b-versatile","llama-3.1-8b-instant","mixtral-8x7b-32768"])
-
         # set_tokens = st.selectbox("Please select length of output", chatbot.token_class.keys())
         return selected_model, selected_response_type, temperature, submitted #, set_tokens
 
