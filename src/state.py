@@ -9,4 +9,4 @@ class Embeddings():
         return self.state
     
     def set_state(cls, state: VectorStoreIndex):
-        cls.state = state
+        Embeddings.state = state
