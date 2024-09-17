@@ -1,8 +1,6 @@
 # Create streamlit app
 
-from pathlib import Path
 from typing import List, Tuple
-import tempfile
 
 import streamlit as st
 import requests
@@ -86,7 +84,8 @@ def upload_files_to_api(url: str, files: List):
 def handle_file_upload(file_input, backend_url): # default selection is Stream
     if file_input:
         # add user input to session state
-        st.session_state.responses.append({"user": file_input, "bot": None})
+        file_names = ", ".join([file.name for file in file_input])
+        st.session_state.responses.append({"user": f"Uploaded files: {file_names}", "bot": None})
 
         # prepare empty container to update the bot's response in real time
         response_container = st.empty()
@@ -120,6 +119,8 @@ def handle_file_upload(file_input, backend_url): # default selection is Stream
                 """,
                 unsafe_allow_html=True,
             )
+        # update the latest bot response in session state
+        st.session_state.responses[-1]['bot'] = res_detail["detail"]
         # clear input box for next question
         # st.session_state.current_input = ""
 
@@ -138,7 +139,7 @@ def handle_message(user_input, backend_url, selected_model, temperature): # defa
         # prepare empty container to update the bot's response in real time
         response_container = st.empty()
 
-        res = response.json()
+        # res = response.json()
         if response.status_code == 200:
             bot_response = ""
             # if selected_response_type == chatbot.output_type[0]:
@@ -179,7 +180,7 @@ def handle_message(user_input, backend_url, selected_model, temperature): # defa
                 f"""
                 <div style="padding:10px; border-radius: 5px;">
                     <p style="font-family: Arial, sans-serif; color: red">
-                        Error: {res["detail"]}
+                        Error: {response.json()["detail"]}
                     </p>
                 </div>
                 """,
@@ -228,7 +229,7 @@ def main():
     
     if submitted:
         handle_file_upload(file_input=st.session_state["uploaded_files"], backend_url="http://127.0.0.1:8888/upload")
-
+        scroll_to_bottom_of_page()
     # collect user input below the chat history
     prompt = st.chat_input("Ask a question")
     if prompt:
