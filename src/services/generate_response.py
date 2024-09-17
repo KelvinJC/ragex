@@ -22,9 +22,9 @@ def generate(question: str, embeddings: Embeddings, model: str, temperature: flo
         init_llm_client = LLMClient(temperature=temperature)
         client = init_llm_client.select_client(model)
         response = query_engine( 
-            query=question,
-            vector_store_index=embeddings.get_state(),
             llm_client=client,
+            vector_store_index=embeddings.get_state(),
+            query=question,
         )
         return response.response
     except Exception as e:
