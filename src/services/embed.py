@@ -5,14 +5,14 @@ from services.upload_files import upload_file
 from exceptions.log_handler import system_logger
 from exceptions.errors import FileUploadException
 
-from utils.file_checker import check_file
+from utils.file_validation import check_files
 from schema import Result
 from state import Embeddings
 
 
 async def embed_file(files, session_embeddings: Embeddings):
-    file_check = check_file(files=files)
-    if file_check['status_code'] == 200:
+    file_check = check_files(files=files)
+    if file_check.get('status_code') == 200:
         try:
             with tempfile.TemporaryDirectory() as temp_dir:
                 file_upload = await upload_file(files=files, temp_dir=temp_dir)
@@ -40,5 +40,5 @@ async def embed_file(files, session_embeddings: Embeddings):
         return Result(
             is_successful=False,
             error_message="File check failed",
-            detail=file_upload['detail'],
+            detail=file_check['detail'],
     ) 
