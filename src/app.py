@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException, Request, UploadFile, Depends, Respon
 from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 
 from state import Embeddings
-from services.embed import embed_file
+from services.generate_embeddings import embed_file
 from services.generate_response import generate
 from exceptions.log_handler import system_logger
 
