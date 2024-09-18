@@ -82,47 +82,57 @@ def upload_files_to_api(url: str, files: List):
     return response
 
 def handle_file_upload(file_input, backend_url): # default selection is Stream
-    if file_input:
+    if not file_input:
         # add user input to session state
-        file_names = ", ".join([file.name for file in file_input])
-        st.session_state.responses.append({"user": f"Uploaded files: {file_names}", "bot": None})
+        # file_names = ", ".join([file.name for file in file_input])
+        st.session_state.responses.append(
+            {
+                "user": "", 
+                "bot": """ Hello I am here to help you understand any any document? Upload the files to start"""
+            }
+        )
+        return 
+    
+    # add user input to session state
+    file_names = ", ".join([file.name for file in file_input])
+    st.session_state.responses.append({"user": f"Uploaded files: {file_names}", "bot": None})
 
-        # prepare empty container to update the bot's response in real time
-        response_container = st.empty()
+    # prepare empty container to update the bot's response in real time
+    response_container = st.empty()
 
-        response = upload_files_to_api(url=backend_url, files=file_input)
-        res_detail = response.json()
-        print("resp det", res_detail)
-        if response.status_code == 200:
-            st.session_state["file_uploaded"] = False
-            bot_response = res_detail["detail"]
-            # display bot's response with adaptable height
-            st.markdown(
-                f"""
-                <div style="padding:10px; border-radius: 5px;">
-                    <p style="font-family: Arial, sans-serif; font-color: #2f2f2f">{bot_response.strip()}</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-            # update the latest bot response in session state
-            st.session_state.responses[-1]['bot'] = bot_response.strip()
-
-        else:
-            response_container.markdown(
-                f"""
-                <div style="padding:10px; border-radius: 5px;">
-                    <p style="font-family: Arial, sans-serif; color:red">
-                        Error: {res_detail["detail"]}
-                    </p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+    response = upload_files_to_api(url=backend_url, files=file_input)
+    res_detail = response.json()
+    print("resp det", res_detail)
+    if response.status_code == 200:
+        st.session_state["file_uploaded"] = False
+        bot_response = res_detail["detail"]
+        # display bot's response with adaptable height
+        st.markdown(
+            f"""
+            <div style="padding:10px; border-radius: 5px;">
+                <p style="font-family: Arial, sans-serif; font-color: #2f2f2f">{bot_response.strip()}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         # update the latest bot response in session state
-        st.session_state.responses[-1]['bot'] = res_detail["detail"]
-        # clear input box for next question
-        # st.session_state.current_input = ""
+        st.session_state.responses[-1]['bot'] = bot_response.strip()
+
+    else:
+        response_container.markdown(
+            f"""
+            <div style="padding:10px; border-radius: 5px;">
+                <p style="font-family: Arial, sans-serif; color:red">
+                    Error: {res_detail["detail"]}
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    # update the latest bot response in session state
+    st.session_state.responses[-1]['bot'] = res_detail["detail"]
+    # clear input box for next question
+    # st.session_state.current_input = ""
 
 def handle_message(user_input, backend_url, selected_model, temperature): # default selection is Stream
     if user_input:
@@ -139,7 +149,7 @@ def handle_message(user_input, backend_url, selected_model, temperature): # defa
         # prepare empty container to update the bot's response in real time
         response_container = st.empty()
 
-        # res = response.json()
+        res = response.json()
         if response.status_code == 200:
             bot_response = ""
             # if selected_response_type == chatbot.output_type[0]:
@@ -180,7 +190,7 @@ def handle_message(user_input, backend_url, selected_model, temperature): # defa
                 f"""
                 <div style="padding:10px; border-radius: 5px;">
                     <p style="font-family: Arial, sans-serif; color: red">
-                        Error: {response.json()["detail"]}
+                        Error: {res["detail"]}
                     </p>
                 </div>
                 """,
@@ -204,18 +214,14 @@ def get_configs():
         # expander = st.expander("Select your response type", expanded=True)
         # with expander:
         # select model and training parameters
-        expander = st.expander("⚒ Model Configuration", expanded=True)
+        expander = st.expander("⚒ RAG Pipeline Configuration", expanded=True)
         with expander:
-            st.subheader("Adjust Model Parameters")
+            st.subheader("Adjust RAG Parameters")
             selected_response_type = st.radio("Output types", ["Stream", "Batch"], index=None)
             temperature = st.slider("Temperature", min_value=0.01, max_value=5.0, value=0.0, step=0.01, format="%.1f")
         selected_model = st.selectbox("Select your preferred model: ", ["llama-3.1-70b-versatile","llama-3.1-8b-instant","mixtral-8x7b-32768"])
         # set_tokens = st.selectbox("Please select length of output", chatbot.token_class.keys())
         return selected_model, selected_response_type, temperature, submitted #, set_tokens
-
-def change_file_state():
-    st.session_state["file_uploaded"] = True
-
 
 
 # main layout
@@ -227,9 +233,11 @@ def main():
     selected_model, selected_response_type, temperature, submitted = get_configs()
     # selected_response_type = selected_response_type # if selected_response_type else chatbot.output_type[0] # default selection is Stream 
     
+    files = st.session_state.get("uploaded_files")
     if submitted:
-        handle_file_upload(file_input=st.session_state["uploaded_files"], backend_url="http://127.0.0.1:8888/upload")
+        handle_file_upload(file_input=files, backend_url="http://127.0.0.1:8888/upload")
         scroll_to_bottom_of_page()
+
     # collect user input below the chat history
     prompt = st.chat_input("Ask a question")
     if prompt:
