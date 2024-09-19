@@ -210,7 +210,7 @@ def get_configs():
         with expander:
             st.subheader("Adjust RAG Parameters")
             selected_response_type = st.radio("Output types", ["Stream", "Batch"], index=None)
-            temperature = st.slider("Temperature", min_value=0.01, max_value=5.0, value=0.0, step=0.01, format="%.1f")
+            temperature = st.slider("Temperature", min_value=0.01, max_value=2.0, value=0.0, step=0.01, format="%.1f")
         selected_model = st.selectbox("Select your preferred model: ", ["llama-3.1-70b-versatile","llama-3.1-8b-instant","mixtral-8x7b-32768"])
         # set_tokens = st.selectbox("Please select length of output", chatbot.token_class.keys())
         return selected_model, selected_response_type, temperature, submitted #, set_tokens
