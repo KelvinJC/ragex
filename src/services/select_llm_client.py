@@ -10,10 +10,11 @@ from utils.anthropic_base_modified import Anthropic
 from utils.config import groq_api_key
 
 class LLMClient:
-    def __init__(self, temperature: float = 0.1) -> None:    
+    def __init__(self, max_output_tokens: int = 512, temperature: float = 0.1) -> None:    
         self.groq_api_key = groq_api_key
         self.secrets_path: Optional[str] = None,
         self.temperature = temperature
+        self.max_output_tokens = max_output_tokens
 
     def select_client(self, model):
         model_map = {
@@ -33,6 +34,7 @@ class LLMClient:
             model, 
             api_key=self.groq_api_key, 
             temperature=self.temperature,
+            max_tokens=self.max_output_tokens,
         )
     
     def gemini(self, model):
@@ -41,6 +43,7 @@ class LLMClient:
             model=model,
             project_id=credentials.project_id,
             credentials=credentials,
+            max_tokens=self.max_output_tokens,
         )
     
     def anthropic(self, model):
@@ -56,6 +59,7 @@ class LLMClient:
         return Anthropic(
             model=model,
             vertex_client=vertex_client,
+            max_tokens=self.max_output_tokens,
         )
 
     def load_credentials(self):
