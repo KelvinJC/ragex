@@ -68,7 +68,7 @@ def post_request_to_api(url: str, question: str, model: str, temperature: float)
             "model": model,
             "temperature": temperature,
         },
-        # stream=True,
+        stream=True,
     )
     return response
 
@@ -102,9 +102,7 @@ def handle_file_upload(file_input, backend_url): # default selection is Stream
 
     response = upload_files_to_api(url=backend_url, files=file_input)
     res_detail = response.json()
-    print("resp det", res_detail)
     if response.status_code == 200:
-        st.session_state["file_uploaded"] = False
         bot_response = res_detail["detail"]
         # display bot's response with adaptable height
         st.markdown(
@@ -129,8 +127,8 @@ def handle_file_upload(file_input, backend_url): # default selection is Stream
             """,
             unsafe_allow_html=True,
         )
-    # update the latest bot response in session state
-    st.session_state.responses[-1]['bot'] = res_detail["detail"]
+        # update the latest bot response in session state
+        st.session_state.responses[-1]['bot'] = res_detail["detail"]
     # clear input box for next question
     # st.session_state.current_input = ""
 
@@ -141,12 +139,7 @@ def handle_message(user_input, backend_url, selected_model, temperature): # defa
         # prepare empty container to update the bot's response in real time
         response_container = st.empty()
 
-        res = post_request_to_api(
-            url=backend_url,
-            question=user_input,
-            model=selected_model,
-            temperature=temperature,
-        )
+        res = post_request_to_api(url=backend_url, question=user_input, model=selected_model, temperature=temperature)
         if res.status_code == 200:
             bot_response = ""
             # if selected_response_type == chatbot.output_type[0]:
@@ -183,16 +176,18 @@ def handle_message(user_input, backend_url, selected_model, temperature): # defa
             st.session_state.responses[-1]['bot'] = bot_response.strip()
 
         else:
+            res_content = res.json()
             response_container.markdown(
                 f"""
                 <div style="padding:10px; border-radius: 5px;">
                     <p style="font-family: Arial, sans-serif; color: red">
-                        Error: {res["detail"]}
+                        Error: {res_content["detail"]}
                     </p>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
+            st.session_state.responses[-1]['bot'] = res_content["detail"]
         # clear input box for next question
         # st.session_state.current_input = ""
 
