@@ -4,7 +4,7 @@ from typing import List, Tuple
 
 import streamlit as st
 import requests
-
+ 
  
 # configure web page
 st.set_page_config(page_title="RAG.ai", page_icon="✨", layout="wide")
@@ -68,7 +68,7 @@ def post_request_to_api(url: str, question: str, model: str, temperature: float)
             "model": model,
             "temperature": temperature,
         },
-        stream=True,
+        # stream=True,
     )
     return response
 
@@ -138,23 +138,20 @@ def handle_message(user_input, backend_url, selected_model, temperature): # defa
     if user_input:
         # add user input to session state
         st.session_state.responses.append({'user': user_input, 'bot': None})
+        # prepare empty container to update the bot's response in real time
+        response_container = st.empty()
 
-        response = post_request_to_api(
+        res = post_request_to_api(
             url=backend_url,
             question=user_input,
             model=selected_model,
             temperature=temperature,
         )
-
-        # prepare empty container to update the bot's response in real time
-        response_container = st.empty()
-
-        res = response.json()
-        if response.status_code == 200:
+        if res.status_code == 200:
             bot_response = ""
             # if selected_response_type == chatbot.output_type[0]:
             #     # stream response from backend
-            #     for chunk in response.iter_content(chunk_size=None, decode_unicode=True):
+            #     for chunk in res.iter_content(chunk_size=None, decode_unicode=True):
             #         bot_response += chunk
             #         # update response container with the latest bot response
             #         response_container.markdown(
@@ -170,7 +167,7 @@ def handle_message(user_input, backend_url, selected_model, temperature): # defa
 
             # else:
             # collect the batch response
-            for chunk in response.iter_content(chunk_size=None, decode_unicode=True):
+            for chunk in res.iter_content(chunk_size=None, decode_unicode=True):
                 bot_response += chunk
             
             # display bot's response with adaptable height
