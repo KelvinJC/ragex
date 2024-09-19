@@ -66,7 +66,7 @@ joblib==1.4.2
 jsonschema==4.23.0
 jsonschema-specifications==2023.12.1
 kubernetes==30.1.0
-llama-index-core==0.11.10
+llama-index-core==0.10.68.post1
 llama-index-embeddings-huggingface==0.2.3
 llama-index-llms-anthropic==0.1.17
 llama-index-llms-groq==0.1.4
@@ -110,7 +110,7 @@ pandas==2.2.2
 pillow==10.4.0
 posthog==3.6.6
 proto-plus==1.24.0
-protobuf==4.25.5
+protobuf==5.28.2
 pyarrow==15.0.2
 pyasn1==0.6.0
 pyasn1_modules==0.4.0
