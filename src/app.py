@@ -51,12 +51,14 @@ async def generate_chat(request: Request): #, session_embeddings: Embeddings = D
     model = req_params["model"]
     temperature = req_params["temperature"]
     question = req_params["question"]
+    max_tokens = req_params["max_tokens"]
     # modify top k from req_params
     try:
         response = generate(
             question=question, 
             model=model, 
             temperature=temperature,
+            max_tokens=max_tokens,
         )
         return PlainTextResponse(content=response, status_code=200)
     except Exception as e:
