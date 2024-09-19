@@ -1,10 +1,9 @@
 from typing import List
 
-from fastapi import FastAPI, HTTPException, Request, UploadFile, Depends, Response
-from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
+from fastapi import FastAPI, HTTPException, Request, UploadFile
+from fastapi.responses import PlainTextResponse, StreamingResponse
 
-from state import Embeddings
-from services.generate_embeddings import embed_file_and_persist, embed_file
+from services.generate_embeddings import embed_file_and_persist
 from services.generate_response import generate
 from exceptions.log_handler import system_logger
 
@@ -13,7 +12,7 @@ app = FastAPI()
 @app.get('/health')
 async def health():
     return {
-        "application": "Simple LLM API",
+        "application": "LLM RAG System API",
         "message": "running successfully",
     }
 
@@ -46,7 +45,7 @@ async def process(
 
 
 @app.post('/generate')
-async def generate_chat(request: Request): #, session_embeddings: Embeddings = Depends(Embeddings)):
+async def generate_chat(request: Request):
     req_params = await request.json()
     model = req_params["model"]
     temperature = req_params["temperature"]
