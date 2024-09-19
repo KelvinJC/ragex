@@ -132,14 +132,20 @@ def handle_file_upload(file_input, backend_url): # default selection is Stream
     # clear input box for next question
     # st.session_state.current_input = ""
 
-def handle_message(user_input, backend_url, selected_model, temperature): # default selection is Stream
+def handle_message(user_input, backend_url, selected_model, temperature, max_tokens): # default selection is Stream
     if user_input:
         # add user input to session state
         st.session_state.responses.append({'user': user_input, 'bot': None})
         # prepare empty container to update the bot's response in real time
         response_container = st.empty()
 
-        res = post_request_to_api(url=backend_url, question=user_input, model=selected_model, temperature=temperature)
+        res = post_request_to_api(
+            url=backend_url, 
+            question=user_input, 
+            model=selected_model, 
+            temperature=temperature, 
+            max_tokens=max_tokens,
+        )
         if res.status_code == 200:
             bot_response = ""
             # if selected_response_type == chatbot.output_type[0]:
@@ -210,25 +216,26 @@ def get_configs():
         with expander:
             st.subheader("Adjust RAG Parameters")
             selected_response_type = st.radio("Output types", ["Stream", "Batch"], index=None)
+            max_tokens = st.number_input("Max Tokens", min_value=1, max_value=1024, value=512)
             temperature = st.slider("Temperature", min_value=0.01, max_value=2.0, value=0.0, step=0.01, format="%.1f")
         selected_model = st.selectbox("Select your preferred model: ", ["llama-3.1-70b-versatile","llama-3.1-8b-instant","mixtral-8x7b-32768"])
         # set_tokens = st.selectbox("Please select length of output", chatbot.token_class.keys())
-        return selected_model, selected_response_type, temperature, submitted #, set_tokens
+        return selected_model, selected_response_type, temperature, submitted, max_tokens #, set_tokens
 
 
 # main layout
 def main():
-    scroll_to_bottom_of_page()
     display_chat_history()
+    scroll_to_bottom_of_page()
 
     # selected_model, selected_response_type, temperature, set_tokens = get_configs()
-    selected_model, selected_response_type, temperature, submitted = get_configs()
+    selected_model, selected_response_type, temperature, submitted, max_tokens = get_configs()
     # selected_response_type = selected_response_type # if selected_response_type else chatbot.output_type[0] # default selection is Stream 
     
     files = st.session_state.get("uploaded_files")
     if submitted:
         handle_file_upload(file_input=files, backend_url="http://127.0.0.1:8888/upload")
-        scroll_to_bottom_of_page()
+        # scroll_to_bottom_of_page()
 
     # collect user input below the chat history
     prompt = st.chat_input("Ask a question")
@@ -255,7 +262,9 @@ def main():
                 backend_url=backend_url,
                 selected_model=selected_model,
                 temperature=temperature,
+                max_tokens=max_tokens,
             )
+
 
 if __name__ =="__main__":
     main()
