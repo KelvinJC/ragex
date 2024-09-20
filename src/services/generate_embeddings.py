@@ -45,19 +45,19 @@ async def embed_file(files, session_embeddings: Embeddings):
             detail=file_check['detail'],
     ) 
 
-def create_storage_path(parent_dir: str, project_dir: str):
+def create_storage_path(parent_dir: str, embeddings_dir: str):
     try:
-        storage_path = Path(parent_dir, project_dir)
-        storage_path.mkdir()
+        storage_path = Path(parent_dir, embeddings_dir)
+        storage_path.mkdir(exist_ok=True)
         return storage_path
     except Exception as e:
         raise e
 
-async def embed_file_and_persist(files: List, project_id: str):
+async def embed_file_and_persist(files: List, project_embeddings_dir: str):
     file_check = check_files(files=files)
     if file_check.get('status_code') == 200:
         try:
-            vector_storage_path = create_storage_path('vector_db', project_id)
+            vector_storage_path = create_storage_path('vector_db', project_embeddings_dir)
             with tempfile.TemporaryDirectory() as temp_dir:
                 file_upload = await upload_file(files=files, temp_dir=temp_dir)
                 if file_upload.is_successful:
