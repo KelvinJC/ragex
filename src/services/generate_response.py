@@ -30,9 +30,9 @@ def query_engine(query: str, vector_store_index: VectorStoreIndex, llm_client):
     response = query_engine.query(query)
     return response
 
-def generate(question: str, model: str, temperature: float):
+def generate(question: str, model: str, temperature: float, max_tokens: int):
     try:
-        init_llm_client = LLMClient(temperature=temperature)
+        init_llm_client = LLMClient(max_output_tokens=max_tokens, temperature=temperature)
         client = init_llm_client.select_client(model)
         index = get_embeddings_index()
         print("index obtained successfully")
