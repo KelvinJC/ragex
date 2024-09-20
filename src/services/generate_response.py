@@ -18,9 +18,9 @@ Settings.embed_model = HuggingFaceEmbedding(
     model_name="BAAI/bge-small-en-v1.5"
 )
 
-def get_embeddings_index():
+def get_embeddings_index(project_dir):
     """Return the index of stored embeddings""" 
-    storage_path = Path("vector_db")
+    storage_path = Path("vector_db", project_dir)
     storage_context = StorageContext.from_defaults(persist_dir=storage_path) 
     index = load_index_from_storage(storage_context)
     return index
@@ -30,13 +30,17 @@ def query_engine(query: str, vector_store_index: VectorStoreIndex, llm_client):
     response = query_engine.query(query)
     return response
 
-def generate(question: str, model: str, temperature: float, max_tokens: int):
+def generate(
+    question: str, 
+    model: str, 
+    temperature: float, 
+    max_tokens: int, 
+    project_embeddings_dir: str,
+):
     try:
         init_llm_client = LLMClient(max_output_tokens=max_tokens, temperature=temperature)
         client = init_llm_client.select_client(model)
-        index = get_embeddings_index()
-        print("index obtained successfully")
-        
+        index = get_embeddings_index(project_embeddings_dir)        
         response = query_engine( 
             query=question,
             llm_client=client,
