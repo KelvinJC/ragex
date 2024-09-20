@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import FastAPI, HTTPException, Request, UploadFile
+from fastapi import FastAPI, Form, HTTPException, Request, UploadFile
 from fastapi.responses import PlainTextResponse, StreamingResponse
 
 from services.generate_embeddings import embed_file_and_persist
@@ -16,13 +16,15 @@ async def health():
         "message": "running successfully",
     }
 
+
 @app.post('/upload')
 async def process(
+    project_id: str = Form(...),
     files: List[UploadFile] = None, 
-    urls: List[str] = None,
+    # urls: List[str] = None,
 ):
     try:
-        res = await embed_file_and_persist(files)
+        res = await embed_file_and_persist(files, project_id=project_id)
         if res.error_message: 
             # Use 400 STATUS CODE FOR FILE CHECK ERROR.. 
             # Perhaps a pointer to wrap all embed related func in the service
@@ -51,6 +53,7 @@ async def generate_chat(request: Request):
     temperature = req_params["temperature"]
     question = req_params["question"]
     max_tokens = req_params["max_tokens"]
+    project_id = req_params["project_id"]
     # modify top k from req_params
     try:
         response = generate(
@@ -58,6 +61,7 @@ async def generate_chat(request: Request):
             model=model, 
             temperature=temperature,
             max_tokens=max_tokens,
+            project_embeddings_dir=project_id,
         )
         return PlainTextResponse(content=response, status_code=200)
     except Exception as e:
