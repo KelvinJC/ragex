@@ -24,7 +24,7 @@ async def process(
     # urls: List[str] = None,
 ):
     try:
-        res = await embed_file_and_persist(files, project_id=project_id)
+        res = await embed_file_and_persist(files, project_embeddings_dir=project_id)
         if res.error_message: 
             # Use 400 STATUS CODE FOR FILE CHECK ERROR.. 
             # Perhaps a pointer to wrap all embed related func in the service
