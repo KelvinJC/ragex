@@ -1,5 +1,6 @@
 from pathlib import Path
 import tempfile
+from typing import List
 
 from services.generate_response import SimpleDirectoryReader, VectorStoreIndex
 from services.upload_files import upload_file
@@ -44,11 +45,19 @@ async def embed_file(files, session_embeddings: Embeddings):
             detail=file_check['detail'],
     ) 
 
-async def embed_file_and_persist(files):
+def create_storage_path(parent_dir: str, project_dir: str):
+    try:
+        storage_path = Path(parent_dir, project_dir)
+        storage_path.mkdir()
+        return storage_path
+    except Exception as e:
+        raise e
+
+async def embed_file_and_persist(files: List, project_id: str):
     file_check = check_files(files=files)
     if file_check.get('status_code') == 200:
         try:
-            vector_storage_path = Path('vector_db')
+            vector_storage_path = create_storage_path('vector_db', project_id)
             with tempfile.TemporaryDirectory() as temp_dir:
                 file_upload = await upload_file(files=files, temp_dir=temp_dir)
                 if file_upload.is_successful:
