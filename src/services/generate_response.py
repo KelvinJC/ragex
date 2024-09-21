@@ -10,6 +10,7 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
 from services.select_llm_client import LLMClient
 from exceptions.log_handler import system_logger
+from utils.config import vector_store_dir
 
 print("Finished llama imports...") 
 
@@ -19,7 +20,7 @@ Settings.embed_model = HuggingFaceEmbedding(
 
 def get_embeddings_index(project_dir):
     """Return the index of stored embeddings""" 
-    storage_path = Path("vector_db", project_dir)
+    storage_path = Path(vector_store_dir, project_dir)
     storage_context = StorageContext.from_defaults(persist_dir=storage_path) 
     index = load_index_from_storage(storage_context)
     return index

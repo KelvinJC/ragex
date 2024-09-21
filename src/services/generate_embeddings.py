@@ -8,6 +8,7 @@ from exceptions.log_handler import system_logger
 from exceptions.errors import FileUploadException
 
 from utils.file_validation import check_files
+from utils.config import vector_store_dir
 from schema import Result
 
 
@@ -45,7 +46,7 @@ async def embed_file_and_persist(files: List, project_embeddings_dir: str):
             detail=file_check['detail'],
     ) 
 
-def create_storage_path(embeddings_dir: str, parent_dir: str = 'vector_db'):
+def create_storage_path(embeddings_dir: str, parent_dir: str = vector_store_dir):
     try:
         Path(parent_dir).mkdir(exist_ok=True)
         storage_path = Path(parent_dir, embeddings_dir)
