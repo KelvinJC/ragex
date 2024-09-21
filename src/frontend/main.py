@@ -68,7 +68,7 @@ def main():
             """, 
             unsafe_allow_html=True)
             emb = selected_project_id or selected_project
-            handle_message(
+            handle_chat(
                 user_input=user_input,
                 backend_url=backend_url,
                 selected_model=selected_model,
@@ -129,7 +129,7 @@ def handle_file_upload(file_input, data, backend_url): # default selection is St
     # st.session_state.current_input = ""
     selected_project_id = data["project_id"]
 
-def handle_message(user_input, backend_url, selected_model, temperature, max_tokens, project_id): 
+def handle_chat(user_input, backend_url, selected_model, temperature, max_tokens, project_id): 
     if user_input:
         # add user input to session state
         st.session_state.responses.append({'user': user_input, 'bot': None})
