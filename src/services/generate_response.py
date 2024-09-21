@@ -9,7 +9,6 @@ from llama_index.core import (
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
 from services.select_llm_client import LLMClient
-from state import Embeddings
 from exceptions.log_handler import system_logger
 
 print("Finished llama imports...") 
@@ -25,7 +24,7 @@ def get_embeddings_index(project_dir):
     index = load_index_from_storage(storage_context)
     return index
 
-def query_engine(query: str, vector_store_index: VectorStoreIndex, llm_client):
+def query_engine(query: str, vector_store_index: VectorStoreIndex, llm_client: LLMClient):
     query_engine = vector_store_index.as_query_engine(llm=llm_client, similarity_top_k=10)
     response = query_engine.query(query)
     return response
