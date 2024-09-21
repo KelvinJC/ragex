@@ -1,17 +1,27 @@
 # Create streamlit app
 
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 import streamlit as st
 import requests
+import random 
  
- 
+
+selected_model = None
+selected_response_type = None
+temperature = None
+submitted = None
+max_tokens = None
+selected_project_id = None
+selected_project = None
+
 # configure web page
 st.set_page_config(page_title="RAG.ai", page_icon="✨", layout="wide")
 
 # initialise session state for tracking user input and responses
 if 'responses' not in st.session_state:
     st.session_state.responses = []
+    st.session_state["projects"] = []
 
 def scroll_to_bottom_of_page():
     """ Return focus to bottom of page once a question is entered."""
@@ -59,7 +69,14 @@ def display_chat_history():
                 unsafe_allow_html=True,
             )
 
-def post_request_to_api(url: str, question: str, model: str, temperature: float):
+def post_request_to_api(
+    url: str, 
+    question: str, 
+    model: str, 
+    temperature: float, 
+    max_tokens: int, 
+    project_id: str
+):
     """Send the user input to backend API"""
     response = requests.post(
         url,
@@ -67,6 +84,8 @@ def post_request_to_api(url: str, question: str, model: str, temperature: float)
             "question": question,
             "model": model,
             "temperature": temperature,
+            "max_tokens": max_tokens,
+            "project_id": project_id,
         },
         stream=True,
     )
@@ -75,13 +94,13 @@ def post_request_to_api(url: str, question: str, model: str, temperature: float)
 def configure_file_payload(file) -> Tuple:
     return ("files", (file.name, file.read(), "application/pdf"))
 
-def upload_files_to_api(url: str, files: List):
+def upload_files_to_api(url: str, payload: Dict, files: List):
     """Upload files to backend API"""
     all_file_content = [configure_file_payload(file) for file in files]
-    response = requests.post(url, files=all_file_content) # stream=True,
+    response = requests.post(url, data=payload, files=all_file_content) # stream=True,
     return response
 
-def handle_file_upload(file_input, backend_url): # default selection is Stream
+def handle_file_upload(file_input, data, backend_url): # default selection is Stream
     if not file_input:
         # add user input to session state
         # file_names = ", ".join([file.name for file in file_input])
@@ -100,7 +119,7 @@ def handle_file_upload(file_input, backend_url): # default selection is Stream
     # prepare empty container to update the bot's response in real time
     response_container = st.empty()
 
-    response = upload_files_to_api(url=backend_url, files=file_input)
+    response = upload_files_to_api(url=backend_url, payload=data, files=file_input)
     res_detail = response.json()
     if response.status_code == 200:
         bot_response = res_detail["detail"]
@@ -131,8 +150,9 @@ def handle_file_upload(file_input, backend_url): # default selection is Stream
         st.session_state.responses[-1]['bot'] = res_detail["detail"]
     # clear input box for next question
     # st.session_state.current_input = ""
+    selected_project_id = data["project_id"]
 
-def handle_message(user_input, backend_url, selected_model, temperature, max_tokens): # default selection is Stream
+def handle_message(user_input, backend_url, selected_model, temperature, max_tokens, project_id): 
     if user_input:
         # add user input to session state
         st.session_state.responses.append({'user': user_input, 'bot': None})
@@ -145,6 +165,7 @@ def handle_message(user_input, backend_url, selected_model, temperature, max_tok
             model=selected_model, 
             temperature=temperature, 
             max_tokens=max_tokens,
+            project_id=project_id,
         )
         if res.status_code == 200:
             bot_response = ""
@@ -209,8 +230,6 @@ def get_configs():
         if uploaded_files and submitted:
             st.session_state["uploaded_files"] = uploaded_files
 
-        # expander = st.expander("Select your response type", expanded=True)
-        # with expander:
         # select model and training parameters
         expander = st.expander("⚒ RAG Pipeline Configuration", expanded=True)
         with expander:
@@ -219,9 +238,21 @@ def get_configs():
             max_tokens = st.number_input("Max Tokens", min_value=1, max_value=1024, value=512)
             temperature = st.slider("Temperature", min_value=0.01, max_value=2.0, value=0.0, step=0.01, format="%.1f")
         selected_model = st.selectbox("Select your preferred model: ", ["llama-3.1-70b-versatile","llama-3.1-8b-instant","mixtral-8x7b-32768"])
-        # set_tokens = st.selectbox("Please select length of output", chatbot.token_class.keys())
-        return selected_model, selected_response_type, temperature, submitted, max_tokens #, set_tokens
 
+
+        last_submitted_embeddings = (len(st.session_state["projects"]) - 1) if st.session_state["projects"] else None
+        selected_project = st.selectbox(
+            "Select embeddings for query: ", 
+            st.session_state["projects"], 
+            on_change=change_id, 
+            index=last_submitted_embeddings,
+        )
+
+        vars = (selected_model, selected_response_type, temperature, submitted, max_tokens, selected_project)
+        return vars 
+
+def change_id():
+    selected_project_id = selected_project
 
 # main layout
 def main():
@@ -229,13 +260,20 @@ def main():
     scroll_to_bottom_of_page()
 
     # selected_model, selected_response_type, temperature, set_tokens = get_configs()
-    selected_model, selected_response_type, temperature, submitted, max_tokens = get_configs()
+    vars_ = get_configs()
+    selected_model, selected_response_type, temperature, submitted, max_tokens, selected_project = vars_
     # selected_response_type = selected_response_type # if selected_response_type else chatbot.output_type[0] # default selection is Stream 
     
     files = st.session_state.get("uploaded_files")
     if submitted:
-        handle_file_upload(file_input=files, backend_url="http://127.0.0.1:8888/upload")
+        random_dir_num = random.randint(0, 1098000)
+        embedding_id = f"up {random_dir_num}"
+
+        handle_file_upload(file_input=files, data={"project_id": embedding_id}, backend_url="http://127.0.0.1:8888/upload")
         # scroll_to_bottom_of_page()
+        # update project id list
+        st.session_state["projects"].append(embedding_id)
+        st.rerun()
 
     # collect user input below the chat history
     prompt = st.chat_input("Ask a question")
@@ -251,18 +289,20 @@ def main():
         if user_input:
             left, right = st.columns(2)
             right.markdown(f"""
-            <div style="background-color:#262730; padding:10px; bottom-margin: 1px; border-radius:20px;">
-                <p style="font-family:Arial, sans-serif; font-color: #2f2f2f; ">{user_input}</p>
-            </div>
-            </br>
+                <div style="background-color:#262730; padding:10px; bottom-margin: 1px; border-radius:20px;">
+                    <p style="font-family:Arial, sans-serif; font-color: #2f2f2f; ">{user_input}</p>
+                </div>
+                </br>
             """, 
             unsafe_allow_html=True)
+            emb = selected_project_id or selected_project
             handle_message(
                 user_input=user_input,
                 backend_url=backend_url,
                 selected_model=selected_model,
                 temperature=temperature,
                 max_tokens=max_tokens,
+                project_id=emb,
             )
 
 
