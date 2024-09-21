@@ -7,7 +7,7 @@ from exceptions.errors import FileUploadException
 from schema import Result
 
 
-async def upload_file(files: List[UploadFile], temp_dir):
+async def upload_file(files: List[UploadFile], temp_dir: str):
     try:
         for file in files:
             filename = secure_filename(file.filename)
