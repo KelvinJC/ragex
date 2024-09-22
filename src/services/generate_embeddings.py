@@ -8,7 +8,7 @@ from services.generate_response import (
     StorageContext,
 )
 from services.upload_files import upload_file
-from services.get_chroma import init_chroma
+from services.get_chroma import init_chroma, get_knowledge_base_size
 from exceptions.log_handler import system_logger
 from exceptions.errors import FileUploadException
 
@@ -50,9 +50,16 @@ async def convert_files_to_embeddings(files: List, collection: str) -> Result:
 def embed_documents(collection: str, dir: str) -> VectorStoreIndex:
     documents = SimpleDirectoryReader(dir).load_data()
     col = init_chroma(collection_name=collection)
+    col_size_before_embedding = get_knowledge_base_size(collection=col)
+    
     vector_store = ChromaVectorStore(chroma_collection=col)
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
     embeddings = VectorStoreIndex.from_documents(documents=documents, storage_context=storage_context) 
+    
+    col_size_after_embedding = get_knowledge_base_size(collection=col)
+    # TODO: Replace with new diff logger
+    system_logger.info(f"Embedding size is {col_size_after_embedding - col_size_before_embedding}")
+    print(f"Size of generated embeddings is {col_size_after_embedding - col_size_before_embedding}")
     return embeddings
 
     
