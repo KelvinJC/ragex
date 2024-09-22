@@ -39,7 +39,7 @@ def main():
     files = st.session_state.get("uploaded_files")
     if submitted:
         random_dir_num = random.randint(0, 1098000)
-        embedding_id = f"up {random_dir_num}"
+        embedding_id = f"up{random_dir_num}"
 
         handle_file_upload(file_input=files, data={"project_id": embedding_id}, backend_url="http://127.0.0.1:8888/upload")
         # scroll_to_bottom_of_page()
