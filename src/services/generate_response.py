@@ -18,7 +18,7 @@ Settings.embed_model = HuggingFaceEmbedding(
     model_name="BAAI/bge-small-en-v1.5"
 ) 
 
-def retreive_embeddings_index(collection: str) -> VectorStoreIndex:
+def retrieve_embeddings_index(collection: str) -> VectorStoreIndex:
     """Return the index of embeddings stored in chroma""" 
     chroma_collection = init_chroma(collection_name=collection)
     vector_store = ChromaVectorStore(chroma_collection=chroma_collection, collection_name=collection)
@@ -40,7 +40,7 @@ def generate(
     try:
         init_llm_client = LLMClient(max_output_tokens=max_tokens, temperature=temperature)
         client = init_llm_client.select_client(model)
-        index = retreive_embeddings_index(collection)        
+        index = retrieve_embeddings_index(collection)        
         response = query_engine( 
             query=question,
             llm_client=client,
