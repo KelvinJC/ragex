@@ -1,4 +1,3 @@
-from pathlib import Path
 from llama_index.core import (
     Settings, 
     VectorStoreIndex, 
