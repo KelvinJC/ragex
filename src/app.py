@@ -3,7 +3,7 @@ from typing import List
 from fastapi import FastAPI, Form, HTTPException, Request, UploadFile
 from fastapi.responses import PlainTextResponse, StreamingResponse
 
-from services.generate_embeddings import embed_file_and_persist
+from services.generate_embeddings import convert_files_to_embeddings
 from services.generate_response import generate
 from exceptions.log_handler import system_logger
 
@@ -24,7 +24,7 @@ async def process(
     # urls: List[str] = None,
 ):
     try:
-        res = await embed_file_and_persist(files, project_embeddings_dir=project_id)
+        res = await convert_files_to_embeddings(files, collection=project_id)
         if res.error_message: 
             # Use 400 STATUS CODE FOR FILE CHECK ERROR.. 
             # Perhaps a pointer to wrap all embed related func in the service
@@ -61,7 +61,7 @@ async def generate_chat(request: Request):
             model=model, 
             temperature=temperature,
             max_tokens=max_tokens,
-            project_embeddings_dir=project_id,
+            collection=project_id,
         )
         return PlainTextResponse(content=response, status_code=200)
     except Exception as e:
