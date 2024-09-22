@@ -1,28 +1,28 @@
 from pathlib import Path
 from llama_index.core import (
+    Settings, 
     VectorStoreIndex, 
     SimpleDirectoryReader, 
-    Settings, 
     StorageContext, 
-    load_index_from_storage,
 )
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.vector_stores.chroma import ChromaVectorStore
 
 from services.select_llm_client import LLMClient
+from services.get_chroma import init_chroma
 from exceptions.log_handler import system_logger
-from utils.config import vector_store_dir
 
 print("Finished llama imports...") 
 
 Settings.embed_model = HuggingFaceEmbedding(
     model_name="BAAI/bge-small-en-v1.5"
-)
+) 
 
-def get_embeddings_index(project_dir):
-    """Return the index of stored embeddings""" 
-    storage_path = Path(vector_store_dir, project_dir)
-    storage_context = StorageContext.from_defaults(persist_dir=storage_path) 
-    index = load_index_from_storage(storage_context)
+def retreive_embeddings_index(collection: str) -> VectorStoreIndex:
+    """Return the index of embeddings stored in chroma""" 
+    chroma_collection = init_chroma(collection_name=collection)
+    vector_store = ChromaVectorStore(chroma_collection=chroma_collection, collection_name=collection)
+    index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
     return index
 
 def query_engine(query: str, vector_store_index: VectorStoreIndex, llm_client: LLMClient):
@@ -35,12 +35,12 @@ def generate(
     model: str, 
     temperature: float, 
     max_tokens: int, 
-    project_embeddings_dir: str,
+    collection: str,
 ):
     try:
         init_llm_client = LLMClient(max_output_tokens=max_tokens, temperature=temperature)
         client = init_llm_client.select_client(model)
-        index = get_embeddings_index(project_embeddings_dir)        
+        index = retreive_embeddings_index(collection)        
         response = query_engine( 
             query=question,
             llm_client=client,
