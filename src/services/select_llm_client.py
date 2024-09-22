@@ -9,7 +9,7 @@ from google.oauth2 import service_account
 from utils.anthropic_base_modified import Anthropic
 from utils.config import groq_api_key
 
-class LLMClient:
+class LLMService:
     def __init__(self, max_output_tokens: int = 512, temperature: float = 0.1) -> None:    
         self.groq_api_key = groq_api_key
         self.secrets_path: Optional[str] = None,
@@ -18,18 +18,18 @@ class LLMClient:
 
     def select_client(self, model):
         model_map = {
-            "llama-3.1-70b-versatile": self.groq,
-            "llama-3.1-8b-instant": self.groq,
-            "mixtral-8x7b-32768": self.groq,
-            "claude-3-5-sonnet": self.anthropic,
-            "gemini-1.5-flash": self.gemini,
-            "gemini-1.5-pro": self.gemini,
+            "llama-3.1-70b-versatile": self._groq,
+            "llama-3.1-8b-instant": self._groq,
+            "mixtral-8x7b-32768": self._groq,
+            "claude-3-5-sonnet": self._anthropic,
+            "gemini-1.5-flash": self._gemini,
+            "gemini-1.5-pro": self._gemini,
         }
 
         _client = model_map.get(model)
         return _client(model)
     
-    def groq(self, model):
+    def _groq(self, model):
         return Groq(
             model, 
             api_key=self.groq_api_key, 
@@ -37,8 +37,8 @@ class LLMClient:
             max_tokens=self.max_output_tokens,
         )
     
-    def gemini(self, model):
-        credentials = self.load_credentials()
+    def _gemini(self, model):
+        credentials = self._load_credentials()
         return Vertex(
             model=model,
             project_id=credentials.project_id,
@@ -46,8 +46,8 @@ class LLMClient:
             max_tokens=self.max_output_tokens,
         )
     
-    def anthropic(self, model):
-        credentials = self.load_credentials()
+    def _anthropic(self, model):
+        credentials = self._load_credentials()
         region_map = {
             "claude-3-5-sonnet": "us-east5",
             "claude-3-haiku": "us-central1",
@@ -62,7 +62,7 @@ class LLMClient:
             max_tokens=self.max_output_tokens,
         )
 
-    def load_credentials(self):
+    def _load_credentials(self):
         with open(self.secrets_path, "r") as file:
             secrets = json.loads(file)
         
