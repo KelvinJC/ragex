@@ -60,7 +60,7 @@ def get_choice_k(collection_size: int) -> int:
     else:
         return collection_size
 
-def query_engine(query: str, vector_store_index: VectorStoreIndex, llm_client: LLMService, choice_k: int):
+def query_engine(query: str, vector_store_index: VectorStoreIndex, llm_client, choice_k: int):
     query_engine = vector_store_index.as_query_engine(llm=llm_client, similarity_top_k=choice_k)
     response = query_engine.query(query)
     return response
