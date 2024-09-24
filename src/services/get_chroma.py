@@ -25,3 +25,18 @@ def get_knowledge_base_size(collection: chromadb.Collection) -> int:
         int: The number of embeddings in the collection
     """
     return collection.count()
+
+def get_choice_k(collection_size: int) -> int:
+    try:
+        int(collection_size)
+    except ValueError as e:
+        raise e
+    
+    if collection_size > 150:
+        return 40
+    elif collection_size > 50:
+        return 15
+    elif collection_size > 10:
+        return 5
+    else:
+        return collection_size
