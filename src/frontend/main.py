@@ -9,7 +9,6 @@ from client import post_request_to_api, upload_files_to_api
 from rag_config import (
     get_configs,
     selected_model,
-    selected_response_type,
     temperature,
     submitted,
     max_tokens,
@@ -33,8 +32,7 @@ def main():
 
     # selected_model, selected_response_type, temperature, set_tokens = get_configs()
     vars_ = get_configs()
-    selected_model, selected_response_type, temperature, submitted, max_tokens, selected_project = vars_
-    # selected_response_type = selected_response_type # if selected_response_type else chatbot.output_type[0] # default selection is Stream 
+    selected_model, temperature, submitted, max_tokens, selected_project = vars_
     
     files = st.session_state.get("uploaded_files")
     if submitted:
@@ -42,7 +40,6 @@ def main():
         embedding_id = f"up{random_dir_num}"
 
         handle_file_upload(file_input=files, data={"project_id": embedding_id}, backend_url="http://127.0.0.1:8888/upload")
-        # scroll_to_bottom_of_page()
         # update project id list
         st.session_state["projects"].append(embedding_id)
         st.rerun()
@@ -53,9 +50,6 @@ def main():
         user_input = prompt
 
         # define the URL of the backend API
-        # if selected_response_type == chatbot.output_type[0]:
-        #     backend_url = "http://127.0.0.1:5000/chat_stream"
-        # else:
         backend_url = "http://127.0.0.1:8888/generate"
         
         if user_input:
@@ -81,12 +75,10 @@ def handle_file_upload(file_input, data, backend_url): # default selection is St
     if not file_input:
         # add user input to session state
         # file_names = ", ".join([file.name for file in file_input])
-        st.session_state.responses.append(
-            {
-                "user": "", 
-                "bot": """ Hello I am here to help you understand any any document? Upload the files to start"""
-            }
-        )
+        st.session_state.responses.append({
+            "user": "", 
+            "bot": """Hello I am here to help you understand any any document? Upload the files to start"""
+        })
         return 
     
     # add user input to session state
@@ -146,38 +138,20 @@ def handle_chat(user_input, backend_url, selected_model, temperature, max_tokens
         )
         if res.status_code == 200:
             bot_response = ""
-            # if selected_response_type == chatbot.output_type[0]:
-            #     # stream response from backend
-            #     for chunk in res.iter_content(chunk_size=None, decode_unicode=True):
-            #         bot_response += chunk
-            #         # update response container with the latest bot response
-            #         response_container.markdown(
-            #             f"""
-            #             <div style="padding:10px; border-radius: 5px;">
-            #                 <p style="font-family: Arial, sans-serif; font-color: #2f2f2f">{bot_response.strip()}</p>
-            #             </div>
-            #             """,
-            #             unsafe_allow_html=True,
-            #         )
-            #         # update the latest bot response in session state
-            #         st.session_state.responses[-1]['bot'] = bot_response.strip()
-
-            # else:
-            # collect the batch response
+            # stream response from backend
             for chunk in res.iter_content(chunk_size=None, decode_unicode=True):
                 bot_response += chunk
-            
-            # display bot's response with adaptable height
-            st.markdown(
-                f"""
-                <div style="padding:10px; border-radius: 5px;">
-                    <p style="font-family: Arial, sans-serif; font-color: #2f2f2f">{bot_response.strip()}</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-            # update the latest bot response in session state
-            st.session_state.responses[-1]['bot'] = bot_response.strip()
+                # update response container with the latest bot response
+                response_container.markdown(
+                    f"""
+                    <div style="padding:10px; border-radius: 5px;">
+                        <p style="font-family: Arial, sans-serif; font-color: #2f2f2f">{bot_response.strip()}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                # update the latest bot response in session state
+                st.session_state.responses[-1]['bot'] = bot_response.strip()
 
         else:
             res_content = res.json()
