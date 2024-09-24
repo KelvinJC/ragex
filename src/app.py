@@ -1,12 +1,10 @@
 from typing import List
 
 from fastapi import FastAPI, Form, HTTPException, Request, UploadFile
-from fastapi.responses import PlainTextResponse, StreamingResponse
+from fastapi.responses import StreamingResponse
 
-from services.generate_embeddings import convert_files_to_embeddings
-from services.generate_response import generate
-from services.get_chroma import get_knowledge_base_size, init_chroma
-from services.chat_response_engine import ChatEngine
+from services.retrieval import process_files_for_embeddings
+from services.generation import ChatEngine
 from exceptions.log_handler import system_logger
 
 app = FastAPI()
@@ -26,7 +24,7 @@ async def process(
     # urls: List[str] = None,
 ):
     try:
-        res = await convert_files_to_embeddings(files, collection=project_id)
+        res = await process_files_for_embeddings(files, collection=project_id)
         if res.error_message: 
             # Use 400 STATUS CODE FOR FILE CHECK ERROR.. 
             # Perhaps a pointer to wrap all embed related func in the service
@@ -61,7 +59,7 @@ async def generate_chat(request: Request):
     app.state.chat_memory = chat_engine.retrieve_chat_memory(memory_source=app.state)
     chat_memory = app.state.chat_memory
     try:
-        response = chat_engine.stream_chat_response(
+        response = chat_engine.generate_response(
             question=question,
             model=model,
             temperature=temperature,
