@@ -1,14 +1,14 @@
 import tempfile
 from typing import List
 
-from services.generate_response import (
+from services.generation import (
     SimpleDirectoryReader, 
     VectorStoreIndex, 
     ChromaVectorStore, 
     StorageContext,
 )
 from services.upload_files import upload_file
-from services.get_chroma import init_chroma, get_knowledge_base_size
+from services.chroma_db import init_chroma, get_knowledge_base_size
 from exceptions.log_handler import system_logger
 from exceptions.errors import FileUploadException
 
