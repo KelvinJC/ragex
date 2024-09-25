@@ -1,3 +1,3 @@
 # aisoc-mid
 
-![](src/images/rag-s.png)
+![](src/images/rag-stack.png)
