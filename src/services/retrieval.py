@@ -12,43 +12,33 @@ from services.generation import (
     StorageContext,
 )
 from services.chroma_db import init_chroma, get_knowledge_base_size
-from utils.file_validation import check_files
 from schema import Result
 from exceptions.log_handler import system_logger
 from exceptions.errors import FileUploadException
-
     
     
 async def process_files_for_embeddings(files: List, collection: str) -> Result:
-    file_check = check_files(files=files)
-    if file_check.get('status_code') == 200:
-        try:
-            with tempfile.TemporaryDirectory() as temp_dir:
-                file_upload = await upload_file(files=files, temp_dir=temp_dir)
-                if file_upload.is_successful:
-                    create_embeddings(collection=collection, dir=temp_dir)
-                    return Result(
-                        is_successful=True,
-                        detail="Embeddings generated successfully.",
-                    )  
-        except FileUploadException:
-            system_logger.error("An error occurred during file upload.", exc_info=1)
-            return Result(
-                is_successful=False,
-                detail="File Upload Error.",
-            )        
-        except Exception as e:
-            system_logger.error("An error occurred during embedding.", exc_info=1)
-            return Result(
-                is_successful=False,
-                detail="Could not generate embeddings.",
-            )
-    else:
+    try:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            file_upload = await upload_file(files=files, temp_dir=temp_dir)
+            if file_upload.is_successful:
+                create_embeddings(collection=collection, dir=temp_dir)
+                return Result(
+                    is_successful=True,
+                    detail="Embeddings generated successfully.",
+                )  
+    except FileUploadException:
+        system_logger.error("An error occurred during file upload.", exc_info=1)
         return Result(
             is_successful=False,
-            error_message="File check failed",
-            detail=file_check['detail'],
-    ) 
+            detail="File Upload Error.",
+        )        
+    except Exception as e:
+        system_logger.error("An error occurred during embedding.", exc_info=1)
+        return Result(
+            is_successful=False,
+            detail="Could not generate embeddings.",
+        )
 
 async def upload_file(files: List[UploadFile], temp_dir: str) -> Result:
     try:

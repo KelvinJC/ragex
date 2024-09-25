@@ -6,6 +6,7 @@ from fastapi.responses import StreamingResponse
 from services.retrieval import process_files_for_embeddings
 from services.generation import ChatEngine
 from exceptions.log_handler import system_logger
+from utils.file_validation import check_files
 
 app = FastAPI()
 
@@ -24,12 +25,12 @@ async def process(
     # urls: List[str] = None,
 ):
     try:
-        res = await process_files_for_embeddings(files, collection=project_id)
-        if res.error_message: 
-            # Use 400 STATUS CODE FOR FILE CHECK ERROR.. 
-            # Perhaps a pointer to wrap all embed related func in the service
-            raise HTTPException(status_code=400, detail=res.detail)
+        file_check = check_files(files)
+        if file_check.get('status_code') != 200:
+            system_logger.error(file_check.get('detail'))
+            raise HTTPException(status_code=400, detail=file_check.get('detail'))            
 
+        res = await process_files_for_embeddings(files, collection=project_id)
         if res.is_successful:    
             return {
                 "detail": "Embeddings generated successfully.",
