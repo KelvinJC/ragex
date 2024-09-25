@@ -82,8 +82,8 @@ def handle_file_upload(file_input, data, backend_url): # default selection is St
         return 
     
     # add user input to session state
-    file_names = ", ".join([file.name for file in file_input])
-    st.session_state.responses.append({"user": f"Uploaded files: {file_names}", "bot": None})
+    file_names = ", ".join([f"🗅 {file.name}" for file in file_input])
+    st.session_state.responses.append({"user": file_names, "bot": None})
 
     # prepare empty container to update the bot's response in real time
     response_container = st.empty()
