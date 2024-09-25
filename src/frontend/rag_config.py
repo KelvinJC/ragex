@@ -21,24 +21,28 @@ def get_configs():
         if uploaded_files and submitted:
             st.session_state["uploaded_files"] = uploaded_files
 
-        ex = st.expander("⚒ Conversation Configuration", expanded=True)
-        with ex:
+        project_section = st.expander("🗀 Projects", expanded=True)
+        with project_section:
             last_submitted_embeddings = (len(st.session_state["projects"]) - 1) if st.session_state["projects"] else None
             selected_project = st.selectbox(
-                "Select embeddings for query: ", 
+                "Select embeddings for chat: ", 
                 st.session_state["projects"], 
                 on_change=change_id, 
                 index=last_submitted_embeddings,
             )
-        # select model and training parameters
-        expander = st.expander("⚒ RAG Pipeline Configuration", expanded=True)
-        with expander:
-            st.subheader("Adjust RAG Parameters")
+        model_section = st.expander("🗄 Models", expanded=True)
+        with model_section:
+            selected_model = st.selectbox("Select your preferred model: ", [
+                "llama-3.1-70b-versatile",
+                "llama-3.1-8b-instant",
+                "mixtral-8x7b-32768"
+            ])
+        # select rag parameters
+        rag_section = st.expander("⚒ RAG Configuration", expanded=True)
+        with rag_section:
+            # st.subheader("Adjust RAG Parameters")
             max_tokens = st.number_input("Max Tokens", min_value=1, max_value=1024, value=512)
             temperature = st.slider("Temperature", min_value=0.01, max_value=2.0, value=0.0, step=0.01, format="%.1f")
-        
-        selected_model = st.selectbox("Select your preferred model: ", ["llama-3.1-70b-versatile","llama-3.1-8b-instant","mixtral-8x7b-32768"])
-
 
         vars = (selected_model, temperature, submitted, max_tokens, selected_project)
         return vars 
