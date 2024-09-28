@@ -39,7 +39,15 @@ def main():
         random_dir_num = random.randint(0, 1098000)
         embedding_id = f"up{random_dir_num}"
 
-        handle_file_upload(file_input=files, data={"project_id": embedding_id}, backend_url="http://127.0.0.1:8888/upload")
+        # add user input to session state
+        file_names = ", ".join([f"🗅 {file.name}" for file in files])
+        st.session_state.responses.append({"user": file_names, "bot": None})
+        with st.spinner("Waiting for response..."):
+            handle_file_upload(
+                file_input=files, 
+                data={"project_id": embedding_id}, 
+                backend_url="http://127.0.0.1:8888/upload",
+            )
         # update project id list
         st.session_state["projects"].append(embedding_id)
         st.rerun()
@@ -48,10 +56,7 @@ def main():
     prompt = st.chat_input("Ask a question")
     if prompt:
         user_input = prompt
-
-        # define the URL of the backend API
-        backend_url = "http://127.0.0.1:8888/generate"
-        
+        backend_url = "http://127.0.0.1:8888/generate"       
         if user_input:
             left, right = st.columns(2)
             right.markdown(f"""
@@ -71,23 +76,14 @@ def main():
                 project_id=emb,
             )
 
-def handle_file_upload(file_input, data, backend_url): # default selection is Stream
+def handle_file_upload(file_input, data, backend_url): 
     if not file_input:
-        # add user input to session state
-        # file_names = ", ".join([file.name for file in file_input])
         st.session_state.responses.append({
             "user": "", 
             "bot": """Hello I am here to help you understand any any document? Upload the files to start"""
         })
         return 
     
-    # add user input to session state
-    file_names = ", ".join([f"🗅 {file.name}" for file in file_input])
-    st.session_state.responses.append({"user": file_names, "bot": None})
-
-    # prepare empty container to update the bot's response in real time
-    response_container = st.empty()
-
     response = upload_files_to_api(url=backend_url, payload=data, files=file_input)
     res_detail = response.json()
     if response.status_code == 200:
@@ -103,8 +99,8 @@ def handle_file_upload(file_input, data, backend_url): # default selection is St
         )
         # update the latest bot response in session state
         st.session_state.responses[-1]['bot'] = bot_response.strip()
-
     else:
+        response_container = st.empty()  # prepare empty container to update the bot's response in real time
         response_container.markdown(
             f"""
             <div style="padding:10px; border-radius: 5px;">
@@ -125,9 +121,7 @@ def handle_chat(user_input, backend_url, selected_model, temperature, max_tokens
     if user_input:
         # add user input to session state
         st.session_state.responses.append({'user': user_input, 'bot': None})
-        # prepare empty container to update the bot's response in real time
         response_container = st.empty()
-
         res = post_request_to_api(
             url=backend_url, 
             question=user_input, 
@@ -152,7 +146,6 @@ def handle_chat(user_input, backend_url, selected_model, temperature, max_tokens
                 )
                 # update the latest bot response in session state
                 st.session_state.responses[-1]['bot'] = bot_response.strip()
-
         else:
             res_content = res.json()
             response_container.markdown(
