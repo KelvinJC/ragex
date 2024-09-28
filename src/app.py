@@ -49,11 +49,11 @@ async def process(
 @app.post('/generate')
 async def generate_chat(request: Request):
     req_params = await request.json()
-    model = req_params["model"]
-    temperature = req_params["temperature"]
-    question = req_params["question"]
-    max_tokens = req_params["max_tokens"]
-    project_id = req_params["project_id"]
+    model = req_params.get("model")
+    temperature = req_params.get("temperature")
+    question = req_params.get("question")
+    max_tokens = req_params.get("max_tokens")
+    project_id = req_params.get("project_id")
     # modify top k from req_params
 
     chat_engine = ChatEngine()
