@@ -7,11 +7,11 @@ Leveraging LlamaIndex, ChromaDB, this RAG system is designed to process data fro
 The backend is a FastAPI server handling file upload and chat connection requests made from a Streamlit client app. 
 
 
-## Architecture:
-Programming Language             - Python 
-Model Provider                   - Groq, Google Vertex
-LLM Orchestrators and Frameworks - LlamaIndex, FastAPI, Streamlit
-Operational and Vector Database  - ChromaDB, SQLite
-Monitoring and Observability     - Python Logger
-Deployment                       - Streamlit, GCP
+### Architecture:
+Programming Language             - Python <b>
+Model Provider                   - Groq, Google Vertex <b>
+LLM Orchestrators and Frameworks - LlamaIndex, FastAPI, Streamlit <b>
+Operational and Vector Database  - ChromaDB, SQLite <b>
+Monitoring and Observability     - Python Logger <b>
+Deployment                       - Streamlit, GCP <b>
 
