@@ -5,3 +5,4 @@ logs/
 initial**
 chroma_db/
 vector**/
+embedding_model/
