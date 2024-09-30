@@ -8,10 +8,10 @@ The backend is a FastAPI server handling file upload and chat connection request
 
 
 ### Architecture:
-Programming Language             - Python <b>
-Model Provider                   - Groq, Google Vertex <b>
-LLM Orchestrators and Frameworks - LlamaIndex, FastAPI, Streamlit <b>
-Operational and Vector Database  - ChromaDB, SQLite <b>
-Monitoring and Observability     - Python Logger <b>
-Deployment                       - Streamlit, GCP <b>
+Programming Language             - Python <br>
+Model Provider                   - Groq, Google Vertex <br>
+LLM Orchestrators and Frameworks - LlamaIndex, FastAPI, Streamlit <br>
+Operational and Vector Database  - ChromaDB, SQLite <br>
+Monitoring and Observability     - Python Logger <br>
+Deployment                       - Streamlit, GCP <br>
 
