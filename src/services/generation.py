@@ -1,4 +1,5 @@
 import time
+from pathlib import Path
 from typing import Tuple
 from llama_index.core import (
     Settings, 
@@ -14,11 +15,17 @@ from exceptions.errors import ChatEngineException
 from services.llms import LLMService
 from services.chroma_db import get_choice_k, init_chroma, get_knowledge_base_size
 from exceptions.log_handler import system_logger
+from utils.config import embed_cache_dir
 
 print("Finished llama imports...") 
 
+# create directory to cache embedding model
+embedding_dir = Path(embed_cache_dir)
+embedding_dir.mkdir(exist_ok=True)
+
 Settings.embed_model = HuggingFaceEmbedding(
-    model_name="BAAI/bge-small-en-v1.5"
+    model_name="BAAI/bge-small-en-v1.5",
+    cache_folder=embed_cache_dir,
 ) 
 
 
