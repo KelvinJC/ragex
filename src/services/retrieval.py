@@ -11,7 +11,7 @@ from services.generation import (
     ChromaVectorStore, 
     StorageContext,
 )
-from services.chroma_db import init_chroma, get_knowledge_base_size
+from services.storage import init_chroma, get_knowledge_base_size
 from schema import Result
 from exceptions.log_handler import system_logger
 from exceptions.errors import FileUploadException

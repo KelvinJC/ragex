@@ -13,7 +13,7 @@ from llama_index.core.memory.chat_memory_buffer import ChatMemoryBuffer
 
 from exceptions.errors import ChatEngineException
 from services.llms import LLMService
-from services.chroma_db import get_choice_k, init_chroma, get_knowledge_base_size
+from services.storage import get_choice_k, init_chroma, get_knowledge_base_size
 from exceptions.log_handler import system_logger
 from utils.config import embed_cache_dir
 
