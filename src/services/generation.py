@@ -11,10 +11,10 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.vector_stores.chroma import ChromaVectorStore
 from llama_index.core.memory.chat_memory_buffer import ChatMemoryBuffer
 
-from exceptions.errors import ChatEngineException
 from services.llms import LLMService
 from services.storage import get_choice_k, init_chroma, get_knowledge_base_size
 from exceptions.log_handler import system_logger
+from exceptions.errors import ChatEngineException
 from utils.config import embed_cache_dir
 
 print("Finished llama imports...") 
