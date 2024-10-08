@@ -1,6 +1,6 @@
 from pathlib import Path
 
-allowed_files = [".txt", ".csv", ".json", ".pdf", ".doc", ".docx", ".pptx"]
+allowed_files = [".txt", ".csv", ".json", ".pdf", ".doc", ".docx", ".pptx", ".py"]
 
 def is_allowed_file(filename: str):
     try:
