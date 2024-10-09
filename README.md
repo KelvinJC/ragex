@@ -6,6 +6,7 @@ Leveraging LlamaIndex, ChromaDB, this RAG system is designed to process data fro
 
 The backend is a FastAPI server handling file upload and chat connection requests made from a Streamlit client app. 
 
+![](src/images/convo-screenshot.png)
 
 #### System Architecture:
 Programming Language             - Python <br>
