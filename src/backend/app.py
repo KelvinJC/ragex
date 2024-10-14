@@ -5,10 +5,12 @@ from fastapi.responses import StreamingResponse
 
 from services.retrieval import process_files_for_embeddings
 from services.generation import ChatEngine
-from exceptions.log_handler import system_logger
+from exceptions.log_handler import system_logger, user_ops_logger
 from utils.file_validation import check_files
 
+
 app = FastAPI()
+
 
 @app.get('/health')
 async def health():
@@ -68,7 +70,8 @@ async def generate_chat(request: Request):
             collection=project_id,
             llm_memory=chat_memory,
         )
-        return StreamingResponse(content=response, status_code=200, media_type="text/event-stream") # use this option for production
+        return StreamingResponse(content=response, status_code=200, media_type="text/event-stream")
     except Exception as e:
+        user_ops_logger.error(f"Error generating a respone {e}", exc_info=1)
         raise HTTPException(status_code=500, detail=f"Could not generate response. {str(e)}")
 
