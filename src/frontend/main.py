@@ -6,15 +6,8 @@ import streamlit as st
 
 from chat_flow import display_chat_history, scroll_to_bottom_of_page
 from client import post_request_to_api, upload_files_to_api
-from rag_config import (
-    get_configs,
-    selected_model,
-    temperature,
-    submitted,
-    max_tokens,
-    selected_project_id,
-    selected_project,
-)
+from rag_config import get_configs, selected_project_id
+from speech_to_text import speak_text
 
 # configure web page
 st.set_page_config(page_title="RAG.ai", page_icon="✨", layout="wide")
@@ -30,15 +23,11 @@ def main():
     display_chat_history()
     scroll_to_bottom_of_page()
 
-    # selected_model, selected_response_type, temperature, set_tokens = get_configs()
-    vars_ = get_configs()
-    selected_model, temperature, submitted, max_tokens, selected_project = vars_
-    
+    selected_model, temperature, submitted, max_tokens, selected_project = get_configs()
     files = st.session_state.get("uploaded_files")
     if submitted:
         random_dir_num = random.randint(0, 1098000)
         embedding_id = f"up{random_dir_num}"
-
         # add user input to session state
         file_names = ", ".join([f"🗅 {file.name}" for file in files])
         st.session_state.responses.append({"user": file_names, "bot": None})
@@ -54,27 +43,27 @@ def main():
 
     # collect user input below the chat history
     prompt = st.chat_input("Ask a question")
-    if prompt:
-        user_input = prompt
-        backend_url = "http://127.0.0.1:8888/generate"       
-        if user_input:
-            left, right = st.columns(2)
-            right.markdown(f"""
-                <div style="background-color:#262730; padding:10px; bottom-margin: 1px; border-radius:20px;">
-                    <p style="font-family:Arial, sans-serif; font-color: #2f2f2f; ">{user_input}</p>
-                </div>
-                </br>
-            """, 
-            unsafe_allow_html=True)
-            emb = selected_project_id or selected_project
-            handle_chat(
-                user_input=user_input,
-                backend_url=backend_url,
-                selected_model=selected_model,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                project_id=emb,
-            )
+    user_input = prompt if prompt else st.session_state.get("audio_to_text")
+
+    backend_url = "http://127.0.0.1:8888/generate"       
+    if user_input:
+        left, right = st.columns(2)
+        right.markdown(f"""
+            <div style="background-color:#262730; padding:10px; bottom-margin: 1px; border-radius:20px;">
+                <p style="font-family:Arial, sans-serif; font-color: #2f2f2f; ">{user_input}</p>
+            </div>
+            </br>
+        """, 
+        unsafe_allow_html=True)
+        emb = selected_project_id or selected_project
+        handle_chat(
+            user_input=user_input,
+            backend_url=backend_url,
+            selected_model=selected_model,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            project_id=emb,
+        )
 
 def handle_file_upload(file_input, data, backend_url): 
     if not file_input:
@@ -135,17 +124,20 @@ def handle_chat(user_input, backend_url, selected_model, temperature, max_tokens
             # stream response from backend
             for chunk in res.iter_content(chunk_size=None, decode_unicode=True):
                 bot_response += chunk
+                bot_response_updated = bot_response.strip()
                 # update response container with the latest bot response
                 response_container.markdown(
                     f"""
                     <div style="padding:10px; border-radius: 5px;">
-                        <p style="font-family: Arial, sans-serif; font-color: #2f2f2f">{bot_response.strip()}</p>
+                        <p style="font-family: Arial, sans-serif; font-color: #2f2f2f">{bot_response_updated}</p>
                     </div>
                     """,
                     unsafe_allow_html=True,
                 )
                 # update the latest bot response in session state
-                st.session_state.responses[-1]['bot'] = bot_response.strip()
+                st.session_state.responses[-1]['bot'] = bot_response_updated
+            # # start converting text in response to speech 
+            # speak_text(bot_response_updated)
         else:
             res_content = res.json()
             response_container.markdown(
