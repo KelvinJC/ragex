@@ -1,11 +1,7 @@
-# Create streamlit app
-
 import streamlit as st
+from speech_to_text import recognise_speech
 
-selected_model = None
-temperature = None
-submitted = None
-max_tokens = None
+
 selected_project_id = None
 selected_project = None
 
@@ -20,6 +16,13 @@ def get_configs():
             submitted = st.form_submit_button("Submit")
         if uploaded_files and submitted:
             st.session_state["uploaded_files"] = uploaded_files
+
+        record_section = st.expander("🗀 Records", expanded=True)
+        with record_section:    
+            audio_value = st.experimental_audio_input("Voice chat")
+            if audio_value:
+                st.audio(audio_value)
+                st.session_state["audio_to_text"] = recognise_speech(file=audio_value)
 
         project_section = st.expander("🗀 Projects", expanded=True)
         with project_section:
@@ -40,7 +43,6 @@ def get_configs():
         # select rag parameters
         rag_section = st.expander("⚒ RAG Configuration", expanded=True)
         with rag_section:
-            # st.subheader("Adjust RAG Parameters")
             max_tokens = st.number_input("Max Tokens", min_value=1, max_value=1024, value=512)
             temperature = st.slider("Temperature", min_value=0.01, max_value=2.0, value=0.0, step=0.01, format="%.1f")
 
